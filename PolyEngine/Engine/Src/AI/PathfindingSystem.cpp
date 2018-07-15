@@ -122,6 +122,35 @@ void SmoothPath(const NavGraph* graph, Dynarray<Vector>& path)
 	}
 }
 
+ENGINE_DLLEXPORT Dynarray<Vector> Poly::PathfindingSystem::QueryPathToPosition(World* world, Entity* entity,
+																		   std::function<Vector(World*, Entity*)> PositionPredicate)
+{
+	Dynarray<Vector> calculatedPath;
+	PathfindingComponent* pathfindingCmp = entity->GetComponent<PathfindingComponent>();
+
+	auto wasPathRequested = pathfindingCmp->WasPathRequested();
+	auto isPathReady = pathfindingCmp->IsPathReady();
+
+	if(!wasPathRequested && !isPathReady)
+	{
+		Vector entityPosition = PositionPredicate(world, entity);
+
+		pathfindingCmp->SetDestination(entityPosition);
+
+		// State::RUNNING;
+	}
+	else if(wasPathRequested && !isPathReady)
+	{
+		; // path is being calculated; State::RUNNING;
+	}
+	else if(isPathReady)
+	{
+		calculatedPath = pathfindingCmp->GetPath();
+	}
+
+	return calculatedPath;
+}
+
 ENGINE_DLLEXPORT void Poly::PathfindingSystem::UpdatePhase(World* world)
 {
 	for (auto tuple : world->IterateComponents<PathfindingComponent>())
@@ -143,6 +172,7 @@ ENGINE_DLLEXPORT void Poly::PathfindingSystem::UpdatePhase(World* world)
 
 			SmoothPath(pathfindingCmp->NavigationGraph, path.Value());
 			pathfindingCmp->CalculatedPath = path.TakeValue();
+			pathfindingCmp->IsReady = true;
 		}
 	}
 }

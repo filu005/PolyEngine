@@ -30,6 +30,8 @@ namespace Poly
 
 		void SetDestination(const Vector& pos);
 		void ResetDestination();
+		bool IsPathReady() const { return IsReady; }
+		bool WasPathRequested() const { return RecalculateRequested; }
 
 		inline const Dynarray<Vector>& GetPath() const { return CalculatedPath; }
 	private:
@@ -38,6 +40,7 @@ namespace Poly
 		Optional<Vector> CurentDestination;
 		bool RecalculateRequested = false;
 		bool LastPathSearchFailed = false;
+		bool IsReady = false;
 
 		friend void PathfindingSystem::UpdatePhase(World* world);
 	};
